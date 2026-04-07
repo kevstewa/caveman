@@ -4,21 +4,14 @@ Ultra-compressed communication mode for [OpenCode](https://opencode.ai). Cuts ~7
 
 ## Install
 
-**1. Copy the plugin to your global OpenCode plugins directory:**
+**Copy the plugin to your global OpenCode plugins directory:**
 
 ```bash
 mkdir -p ~/.config/opencode/plugins
 cp caveman.js ~/.config/opencode/plugins/caveman.js
 ```
 
-**2. Copy the command file to enable `/caveman` slash command support:**
-
-```bash
-mkdir -p ~/.config/opencode/commands
-cp commands/caveman.md ~/.config/opencode/commands/caveman.md
-```
-
-**3. Restart OpenCode.**
+**Restart OpenCode.**
 
 No changes to `opencode.json` required — files in `~/.config/opencode/plugins/` are loaded automatically.
 
@@ -46,7 +39,8 @@ No changes to `opencode.json` required — files in `~/.config/opencode/plugins/
 
 ## Notes
 
-- Plugin only fires on TUI input (`tui.prompt.append`). Web and IDE interfaces not supported.
+- `/caveman` uses `command.execute.before` hook; natural language triggers use `tui.prompt.append` (TUI only).
+- Web and IDE interfaces support `/caveman` but not natural language triggers.
 - Caveman mode persists until you say "stop caveman" or "normal mode", or the session ends.
 - Code blocks, git commits, and PR descriptions are always written normally.
 - Security warnings and irreversible action confirmations revert to normal prose automatically.

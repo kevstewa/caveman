@@ -120,15 +120,50 @@ const LEVEL_OVERRIDES = {
   ultra: `Use ultra intensity: maximum compression, abbreviate (DB/auth/config/req/res/fn/impl), arrows for causality (X → Y), one word when one word enough.`,
 }
 
-const TRIGGER_RE =
-  /caveman mode|talk like caveman|use caveman|less tokens|be brief/i
+const TRIGGER_RE = /caveman mode|talk like caveman|use caveman|less tokens|be brief/i
 const STOP_RE = /stop caveman|normal mode/i
 const LEVEL_RE = /\b(lite|full|ultra)\b/i
+
+function activate(output, level) {
+  const override = level !== "full" ? `\n\n${LEVEL_OVERRIDES[level]}` : ""
+  // Replace all parts with a single text part containing the skill + activation
+  output.parts.length = 0
+  output.parts.push({ type: "text", text: `${SKILL}${override}\n\nCaveman mode active. Acknowledge briefly and apply immediately.` })
+}
+
+function switchLevel(output, level) {
+  output.parts.length = 0
+  output.parts.push({ type: "text", text: `${LEVEL_OVERRIDES[level]}\n\nSwitch to ${level} intensity immediately.` })
+}
+
+function deactivate(output) {
+  output.parts.length = 0
+  output.parts.push({ type: "text", text: `Stop caveman mode. Revert to normal communication style immediately.` })
+}
 
 export const CavemanPlugin = async () => {
   let active = false
 
   return {
+    // Handle /caveman [lite|full|ultra] slash command
+    "command.execute.before": async (input, output) => {
+      if (input.command !== "caveman") return
+
+      const args = (input.arguments ?? "").trim().toLowerCase()
+      const level = ["lite", "full", "ultra"].includes(args) ? args : "full"
+
+      if (active && args === "") {
+        // /caveman with no args while active — deactivate
+        active = false
+        deactivate(output)
+        return
+      }
+
+      active = true
+      activate(output, level)
+    },
+
+    // Handle natural language triggers in the prompt
     "tui.prompt.append": async (input, output) => {
       const text = input.text ?? ""
 
@@ -143,18 +178,16 @@ export const CavemanPlugin = async () => {
       const levelMatch = text.match(LEVEL_RE)
 
       if (!active && TRIGGER_RE.test(text)) {
-        // First activation — inject full skill content
         active = true
         const level = levelMatch ? levelMatch[1].toLowerCase() : "full"
-        const override = levelMatch ? `\n\n${LEVEL_OVERRIDES[level]}` : ""
-        output.text = `${SKILL}${override}\n\n${output.text ?? input.text}`
+        const override = level !== "full" ? `\n\n${LEVEL_OVERRIDES[level]}` : ""
+        output.text = `${SKILL}${override}\n\nCaveman mode active. Acknowledge briefly and apply immediately.\n\n${output.text ?? input.text}`
         return
       }
 
       if (active && levelMatch) {
-        // Already active, user is switching intensity level only
         const level = levelMatch[1].toLowerCase()
-        output.text = `${LEVEL_OVERRIDES[level]}\n\n${output.text ?? input.text}`
+        output.text = `${LEVEL_OVERRIDES[level]}\n\nSwitch to ${level} intensity immediately.\n\n${output.text ?? input.text}`
       }
     },
   }
