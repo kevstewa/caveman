@@ -121,9 +121,9 @@ const LEVEL_OVERRIDES = {
 }
 
 const TRIGGER_RE =
-  /caveman mode|talk like caveman|use caveman|less tokens|be brief|\/caveman(?:\s+(lite|full|ultra))?\s*$/i
+  /caveman mode|talk like caveman|use caveman|less tokens|be brief/i
 const STOP_RE = /stop caveman|normal mode/i
-const LEVEL_RE = /\/caveman\s+(lite|full|ultra)/i
+const LEVEL_RE = /\b(lite|full|ultra)\b/i
 
 export const CavemanPlugin = async () => {
   let active = false
